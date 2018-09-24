@@ -1,7 +1,10 @@
 #!/bin/bash
 
-source .env || {
+source .env || source .env.example {
   echo "Configuration (.env) file missing"
+  echo "You may want to:"
+  echo " cp .env.example .env"
+  echo " $EDITOR .env"
   exit 1
 }
 
