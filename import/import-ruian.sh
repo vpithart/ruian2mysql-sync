@@ -38,7 +38,7 @@ WD=$(pwd)
   cd $TMPDIR
 
   MYSQL="mysql -h${HOST} -P${PORT} -u${USER} ${DB}"
-  MYSQL_PWD="$PASSWORD"
+  export MYSQL_PWD="$PASSWORD"
 
   LASTDATE=`date -d "$(date +%Y-%m-01) -1 day" +%Y%m%d`
   HAVE_VERSION=$($MYSQL --skip-column-names -e "SELECT version FROM version LIMIT 1" 2>/dev/null || true)
