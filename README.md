@@ -1,6 +1,7 @@
 # RUIAN to MySQL synchronization cron job
 
-Registr územní identifikace, adres a nemovitostí (RUIAN)
+(EN) https://wiki.openstreetmap.org/wiki/RUIAN
+(CZ) Registr územní identifikace, adres a nemovitostí (RUIAN)
 
 ## Script for one-off data import
 
@@ -8,6 +9,11 @@ Imports RUIAN address data from
 
     http://nahlizenidokn.cuzk.cz/StahniAdresniMistaRUIAN.aspx
 
+into your local MySQL database. Populates following tables:
+- ruain_obce (municipalities)
+- ruian_ulice (streets)
+- ruian_casti_obce (neighbourhoods)
+- ruian_adresy (street addresses)
 
 # Instalace
 
