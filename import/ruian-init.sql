@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS `ruian_adresy`;
-CREATE TABLE `ruian_adresy` (
+DROP TABLE IF EXISTS `ruian_adresy_new`;
+CREATE TABLE `ruian_adresy_new` (
   `id`                      INT(11)        NOT NULL,
   `obec_id`                 INT(11)        NOT NULL,
   `nazev_obce`              VARCHAR(64)    NOT NULL,
