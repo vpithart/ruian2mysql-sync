@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source .env || source .env.example {
+source .env || {
   echo "Configuration (.env) file missing"
   echo "You may want to:"
   echo " cp .env.example .env"
@@ -37,10 +37,20 @@ WD=$(pwd)
   mkdir $TMPDIR
   cd $TMPDIR
 
-  LASTDATE=`date -d "$(date +%Y-%m-01) -1 day" +%Y%m%d`
-  # LASTDATE=20180731
-  NAME="${LASTDATE}_OB_ADR_csv.zip"
+  MYSQL="mysql -h${HOST} -P${PORT} -u${USER} ${DB}"
+  MYSQL_PWD="$PASSWORD"
 
+  LASTDATE=`date -d "$(date +%Y-%m-01) -1 day" +%Y%m%d`
+  HAVE_VERSION=$($MYSQL --skip-column-names -e "SELECT version FROM version LIMIT 1" 2>/dev/null || true)
+
+  if [ "$HAVE_VERSION" = "$LASTDATE" ]
+  then
+    HAVE_VERSION_DATE=$($MYSQL --skip-column-names -e "SELECT importedAt FROM version LIMIT 1")
+    echo "Version $HAVE_VERSION already imported (at $HAVE_VERSION_DATE), quitting."
+    exit 3
+  fi
+
+  NAME="${LASTDATE}_OB_ADR_csv.zip"
   URL="http://vdp.cuzk.cz/vymenny_format/csv/$NAME"
 
   echo "Downloading address list from $URL..."
@@ -50,19 +60,17 @@ WD=$(pwd)
 
   NUM_FILES=$(find ./CSV/ -type f | wc -l | tr -d '\n')
 
-  echo "Databaze initialization..."
-  export MYSQL_PWD="$PASSWORD"
-  mysql -h${HOST} -P${PORT} -u${USER} ${DB} < "$WD/import/ruian-init.sql"
   echo "Importing ${NUM_FILES} file(s) from $NAME into MySQL ${USER}@${HOST}:${PORT}/${DB}"
-  find ./CSV/ -type f | while read line
+  $MYSQL < "$WD/import/ruian-init.sql"
+  find ./CSV/ -type f | while read FILENAME
   do
-    mysql -h${HOST} -P${PORT} -u${USER} --local_infile=1 ${DB} -e "LOAD DATA LOCAL INFILE '$line' INTO TABLE ruian_adresy_new CHARACTER SET cp1250 FIELDS TERMINATED BY ';' IGNORE 1 LINES"
-    :
+    $MYSQL --local_infile=1 -e "LOAD DATA LOCAL INFILE '$FILENAME' INTO TABLE ruian_adresy_new CHARACTER SET cp1250 FIELDS TERMINATED BY ';' IGNORE 1 LINES"
   done
+  $MYSQL --local_infile=1 -e "INSERT INTO version_new (version) VALUES ('$LASTDATE')"
   echo "... done."
 
   echo "Transformations..."
-  mysql -h${HOST} -P${PORT} -u${USER} ${DB} < "$WD/import/ruian-transform.sql"
+  $MYSQL < "$WD/import/ruian-transform.sql"
   echo "... done"
 
   MAXDIFFPCT=5.0
@@ -71,8 +79,8 @@ WD=$(pwd)
   printf ' %-18s %8s %8s %8s\n' 'table' 'before' 'after' 'delta'
   for TABLE in ruian_adresy ruian_ulice ruian_casti_obce ruian_obce
   do
-    WAS=$(mysql -h${HOST} -P${PORT} -u${USER} ${DB} -e "SELECT COUNT(*) FROM $TABLE" --skip-column-names)
-    IS=$(mysql -h${HOST} -P${PORT} -u${USER} ${DB} -e "SELECT COUNT(*) FROM ${TABLE}_new" --skip-column-names)
+    WAS=$($MYSQL -e "SELECT COUNT(*) FROM $TABLE" --skip-column-names 2>/dev/null || echo '0')
+    IS=$($MYSQL -e "SELECT COUNT(*) FROM ${TABLE}_new" --skip-column-names)
     let DELTA=$(( ($IS) - ($WAS) )) || true
     if [ "$WAS" = "0" ]; then PERCENTAGE="0"; else PERCENTAGE=$(echo "scale=2; 100*$DELTA/$WAS" | bc); fi
     [ $(echo "$PERCENTAGE < -$MAXDIFFPCT"|bc) = 1 -o $(echo "$PERCENTAGE > $MAXDIFFPCT"|bc) = 1 ] && OFFLIMIT=1 || OFFLIMIT=0
@@ -90,7 +98,7 @@ WD=$(pwd)
   }
 
   echo "Swapover: ruian_*_new -> ruian_* -> ruian_*_old..."
-  mysql -h${HOST} -P${PORT} -u${USER} ${DB} < "$WD/import/ruian-swap.sql"
+  $MYSQL < "$WD/import/ruian-swap.sql"
   echo "...done"
 )
 cleanup

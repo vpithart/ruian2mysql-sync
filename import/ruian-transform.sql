@@ -10,6 +10,7 @@ CREATE TABLE ruian_obce_new
   GROUP BY obec_id;
 ALTER TABLE `ruian_obce_new` ADD PRIMARY KEY `id` (`id`);
 ALTER TABLE `ruian_adresy_new` DROP `nazev_obce`;
+CREATE TABLE IF NOT EXISTS ruian_obce LIKE ruian_obce_new;
 
 -- casti_obce
 DROP TABLE IF EXISTS ruian_casti_obce_new;
@@ -28,6 +29,7 @@ SET nazev_ulice = nazev_casti_obce
 WHERE nazev_ulice = '';
 ALTER TABLE `ruian_adresy_new` DROP `nazev_casti_obce`, DROP `psc`, DROP `nazev_momc`, DROP `nazev_mop`;
 ALTER TABLE `ruian_casti_obce_new` ADD PRIMARY KEY `id` (`id`), ADD INDEX `obec_id` (`obec_id`);
+CREATE TABLE IF NOT EXISTS ruian_casti_obce LIKE ruian_casti_obce_new;
 
 -- ulice
 DROP TABLE IF EXISTS ruian_ulice_new;
@@ -44,6 +46,7 @@ ALTER TABLE `ruian_ulice_new`
   ADD PRIMARY KEY `id` (`id`),
   ADD INDEX `casti_obce_id` (`casti_obce_id`),
   ADD INDEX `obec_id` (`obec_id`);
+CREATE TABLE IF NOT EXISTS ruian_ulice LIKE ruian_ulice_new;
 
 -- indices for adresy
 ALTER TABLE `ruian_adresy_new`

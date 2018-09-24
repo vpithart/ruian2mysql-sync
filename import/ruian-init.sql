@@ -21,4 +21,14 @@ CREATE TABLE `ruian_adresy_new` (
   `plati_od`                DATETIME       NOT NULL,
   PRIMARY KEY (`id`)
 )
-  ENGINE = InnoDB;
+ENGINE = InnoDB;
+
+DROP TABLE IF EXISTS `version_new`;
+CREATE TABLE `version_new` (
+  version char(8),
+  importedAt timestamp
+)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS ruian_adresy LIKE ruian_adresy_new;
+CREATE TABLE IF NOT EXISTS `version` LIKE version_new;

@@ -39,5 +39,5 @@ $EDITOR .env
 
 Edit your crontab using `crontab -e` and add following line:
 ```
-00 06   1-10    cd /opt/ruian2mysql-sync && ./import/import-ruian.sh
+00 06   * * * * *    cd /opt/ruian2mysql-sync && ./import/import-ruian.sh
 ```
