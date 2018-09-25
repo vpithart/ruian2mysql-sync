@@ -1,43 +1,70 @@
 # RUIAN to MySQL synchronization cron job
 
+Cronjob to synchronize RÚIAN (Czech geolocation data) into local MySQL every month.
+
 - (EN) https://wiki.openstreetmap.org/wiki/RUIAN
 - (CZ) Registr územní identifikace, adres a nemovitostí (RUIAN)
 
-## Script for one-off data import
+The Czech Office for Surveying, Mapping and Cadastre (ČÚZK) offers a simple CSV file to download every month. It covers all the country's street addresses including gegraphic coordinates. The file is typically available on 1st or 2nd day of every month.
 
-Imports RUIAN address data from
+This script, `import-ruian.sh`, downloads and imports the new file as soon as it's ready, and then does nothing for rest of the month.
 
-    http://nahlizenidokn.cuzk.cz/StahniAdresniMistaRUIAN.aspx
+## Installation
 
-into your local MySQL database. Populates following tables:
-- ruain_obce (municipalities)
-- ruian_ulice (streets)
-- ruian_casti_obce (neighbourhoods)
-- ruian_adresy (street addresses)
+1) clone, or unpack the archive into `/opt`
+```sh
+cd /opt
+git clone https://github.com/vpithart/ruian2mysql-sync.git
+```
 
-# Installation
-
-- clone, or unpack the archive
-- (either) configure your MySQL server
+2) configure your MySQL server credentials
 ```sql
 CREATE DATABASE ruian;
 CREATE USER `ruian-import`@`localhost` IDENTIFIED BY "ruian--import";
 GRANT ALL on ruian.* TO `ruian-import`@`localhost`;
 ```
-- (or) set your exeisting MySQL server credentials
-```bash
+3) give the MySQL connection credentials to the script
+```sh
+cd /opt/ruian2mysql-sync
 cp .env.example .env
-$EDITOR .env
 ```
 
-# One-off import
-```
-./import/import-ruian.sh
+```sh
+# Example of /opt/ruian2mysql-sync/.env
+USER="ruian-import"
+PASSWORD="haven't I told you to keep it secret?"
+DB="ruian"
+HOST="localhost"
+PORT=3306
 ```
 
-# Periodic import via task scheduler - cron
+4) edit your crontab (`crontab -e`) and add following line:
+```
+00 06   * * *     cd /opt/ruian2mysql-sync && ./import/import-ruian.sh
+```
 
-Edit your crontab using `crontab -e` and add following line:
+## Troubleshooting
+
+- Can you access the CUZK website from the server you have this script installed on?
+```sh
+wget -O- http://vdp.cuzk.cz/vymenny_format/csv/20180831_OB_ADR_csv.zip
 ```
-00 06   * * * * *    cd /opt/ruian2mysql-sync && ./import/import-ruian.sh
+
+- It's safe to run the script as many times as you want
+```sh
+cd /opt/ruian2mysql-sync && ./import/import-ruian.sh
 ```
+
+- Still not there?
+```sh
+cd /opt/ruian2mysql-sync && bash -x import/import-ruian.sh
+```
+
+## What's under the hood
+Where the data comes from? See http://nahlizenidokn.cuzk.cz/StahniAdresniMistaRUIAN.aspx
+
+Where the data goes to? Into your local MySQL database. The importer populates following tables:
+- ruain_obce (municipalities)
+- ruian_ulice (streets)
+- ruian_casti_obce (neighbourhoods)
+- ruian_adresy (street addresses)
