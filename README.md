@@ -64,7 +64,7 @@ cd /opt/ruian2mysql-sync && bash -x import/import-ruian.sh
 Where the data comes from? See http://nahlizenidokn.cuzk.cz/StahniAdresniMistaRUIAN.aspx
 
 Where the data goes to? Into your local MySQL database. The importer populates following tables:
-- ruain_obce (municipalities)
-- ruian_ulice (streets)
-- ruian_casti_obce (neighbourhoods)
-- ruian_adresy (street addresses)
+- ruain.obce (municipalities)
+- ruian.ulice (streets)
+- ruian.casti_obce (neighbourhoods)
+- ruian.adresy (street addresses)

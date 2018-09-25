@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS `ruian_adresy_new`;
-CREATE TABLE `ruian_adresy_new` (
+DROP TABLE IF EXISTS `adresy_new`;
+CREATE TABLE `adresy_new` (
   `id`                      INT(11)        NOT NULL,
   `obec_id`                 INT(11)        NOT NULL,
   `nazev_obce`              VARCHAR(64)    NOT NULL,
@@ -30,5 +30,5 @@ CREATE TABLE `version_new` (
 )
 ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS ruian_adresy LIKE ruian_adresy_new;
+CREATE TABLE IF NOT EXISTS adresy LIKE adresy_new;
 CREATE TABLE IF NOT EXISTS `version` LIKE version_new;

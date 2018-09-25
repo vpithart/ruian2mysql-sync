@@ -64,7 +64,7 @@ WD=$(pwd)
   $MYSQL < "$WD/import/ruian-init.sql"
   find ./CSV/ -type f | while read FILENAME
   do
-    $MYSQL --local_infile=1 -e "LOAD DATA LOCAL INFILE '$FILENAME' INTO TABLE ruian_adresy_new CHARACTER SET cp1250 FIELDS TERMINATED BY ';' IGNORE 1 LINES"
+    $MYSQL --local_infile=1 -e "LOAD DATA LOCAL INFILE '$FILENAME' INTO TABLE adresy_new CHARACTER SET cp1250 FIELDS TERMINATED BY ';' IGNORE 1 LINES"
   done
   $MYSQL --local_infile=1 -e "INSERT INTO version_new (version) VALUES ('$LASTDATE')"
   echo "... done."
@@ -77,7 +77,7 @@ WD=$(pwd)
   ABORT=0
   echo "Still within means?"
   printf ' %-18s %8s %8s %8s\n' 'table' 'before' 'after' 'delta'
-  for TABLE in ruian_adresy ruian_ulice ruian_casti_obce ruian_obce
+  for TABLE in adresy ulice casti_obce obce
   do
     WAS=$($MYSQL -e "SELECT COUNT(*) FROM $TABLE" --skip-column-names 2>/dev/null || echo '0')
     IS=$($MYSQL -e "SELECT COUNT(*) FROM ${TABLE}_new" --skip-column-names)
@@ -97,7 +97,7 @@ WD=$(pwd)
     exit 2
   }
 
-  echo "Swapover: ruian_*_new -> ruian_* -> ruian_*_old..."
+  echo "Swapover: <table>_new -> <table>, <table> -> <table>_old..."
   $MYSQL < "$WD/import/ruian-swap.sql"
   echo "...done"
 )

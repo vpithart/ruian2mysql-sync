@@ -1,22 +1,22 @@
 START TRANSACTION;
-DROP TABLE IF EXISTS `ruian_adresy_old`;
-DROP TABLE IF EXISTS `ruian_ulice_old`;
-DROP TABLE IF EXISTS `ruian_casti_obce_old`;
-DROP TABLE IF EXISTS `ruian_obce_old`;
+DROP TABLE IF EXISTS `adresy_old`;
+DROP TABLE IF EXISTS `ulice_old`;
+DROP TABLE IF EXISTS `casti_obce_old`;
+DROP TABLE IF EXISTS `obce_old`;
 DROP TABLE IF EXISTS `version_old`;
 
 RENAME TABLE
-  ruian_adresy TO ruian_adresy_old,
-  ruian_casti_obce TO ruian_casti_obce_old,
-  ruian_ulice TO ruian_ulice_old,
-  ruian_obce TO ruian_obce_old,
+  adresy TO adresy_old,
+  casti_obce TO casti_obce_old,
+  ulice TO ulice_old,
+  obce TO obce_old,
   `version` TO version_old;
 
 RENAME TABLE
-  ruian_adresy_new TO ruian_adresy,
-  ruian_casti_obce_new TO ruian_casti_obce,
-  ruian_ulice_new TO ruian_ulice,
-  ruian_obce_new TO ruian_obce,
+  adresy_new TO adresy,
+  casti_obce_new TO casti_obce,
+  ulice_new TO ulice,
+  obce_new TO obce,
   version_new TO `version`;
 
 COMMIT;
