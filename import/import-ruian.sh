@@ -54,7 +54,7 @@ WD=$(pwd)
   URL="http://vdp.cuzk.cz/vymenny_format/csv/$NAME"
 
   echo "Downloading address list from $URL..."
-  wget "$URL"
+  wget --progress dot:mega "$URL"
   echo "Unpacking $NAME..."
   unzip -q -o ${NAME}
 
