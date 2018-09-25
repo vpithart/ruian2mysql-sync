@@ -1,56 +1,53 @@
 SET sql_mode = '';
 
--- obce
-DROP TABLE IF EXISTS obce_new;
-CREATE TABLE obce_new
+-- obec
+DROP TABLE IF EXISTS obec_new;
+CREATE TABLE obec_new
   SELECT
-    obec_id as id,
+    obec_kod,
     nazev_obce as nazev
-  FROM `adresy_new`
-  GROUP BY obec_id;
-ALTER TABLE `obce_new` ADD PRIMARY KEY `id` (`id`);
-ALTER TABLE `adresy_new` DROP `nazev_obce`;
-CREATE TABLE IF NOT EXISTS obce LIKE obce_new;
+  FROM `adresa_new`
+  GROUP BY obec_kod;
+ALTER TABLE `obec_new` ADD PRIMARY KEY `id` (`obec_kod`);
+ALTER TABLE `adresa_new` DROP `nazev_obce`;
+CREATE TABLE IF NOT EXISTS obec LIKE obec_new;
 
--- casti_obce
-DROP TABLE IF EXISTS casti_obce_new;
-CREATE TABLE casti_obce_new
+-- cobce
+DROP TABLE IF EXISTS cobce_new;
+CREATE TABLE cobce_new
   SELECT
-    casti_obce_id as id,
-    obec_id as obec_id,
-    nazev_casti_obce as nazev,
+    cobce_kod,
+    obec_kod,
+    nazev_cobce as nazev,
     psc,
     nazev_momc,
     nazev_mop
-  FROM `adresy_new`
-  GROUP BY casti_obce_id;
-UPDATE `adresy_new`
-SET nazev_ulice = nazev_casti_obce
-WHERE nazev_ulice = '';
-ALTER TABLE `adresy_new` DROP `nazev_casti_obce`, DROP `psc`, DROP `nazev_momc`, DROP `nazev_mop`;
-ALTER TABLE `casti_obce_new` ADD PRIMARY KEY `id` (`id`), ADD INDEX `obec_id` (`obec_id`);
-CREATE TABLE IF NOT EXISTS casti_obce LIKE casti_obce_new;
+  FROM `adresa_new`
+  GROUP BY cobce_kod;
+UPDATE `adresa_new` SET nazev_ulice = nazev_cobce WHERE nazev_ulice = '';
+ALTER TABLE `adresa_new` DROP `nazev_cobce`, DROP `psc`, DROP `nazev_momc`, DROP `nazev_mop`;
+ALTER TABLE `cobce_new` ADD PRIMARY KEY `id` (`cobce_kod`), ADD INDEX `obec_kod` (`obec_kod`);
+CREATE TABLE IF NOT EXISTS cobce LIKE cobce_new;
 
 -- ulice
 DROP TABLE IF EXISTS ulice_new;
 CREATE TABLE ulice_new
   SELECT
-    ulice_id AS id,
-    casti_obce_id,
-    obec_id,
-    nazev_ulice
-  FROM `adresy_new`
-  GROUP BY obec_id, nazev_ulice;
-DELETE FROM ulice_new WHERE id=0;
+    ulice_kod,
+    cobce_kod,
+    obec_kod,
+    nazev_ulice as nazev
+  FROM `adresa_new`
+  GROUP BY obec_kod, nazev_ulice;
+DELETE FROM ulice_new WHERE ulice_kod=0;
 ALTER TABLE `ulice_new`
-  ADD PRIMARY KEY `id` (`id`),
-  ADD INDEX `casti_obce_id` (`casti_obce_id`),
-  ADD INDEX `obec_id` (`obec_id`);
+  ADD PRIMARY KEY `id` (`ulice_kod`),
+  ADD INDEX `cobce_id` (`cobce_kod`),
+  ADD INDEX `obec_id` (`obec_kod`);
 CREATE TABLE IF NOT EXISTS ulice LIKE ulice_new;
 
--- indices for adresy
-ALTER TABLE `adresy_new`
-  ADD INDEX `casti_obce_id` (`casti_obce_id`),
-  ADD INDEX `obec_id` (`obec_id`),
-  ADD INDEX `nazev_ulice` (`nazev_ulice`(4)),
-  ADD INDEX `ulice_id` (`ulice_id`);
+-- indices for adresa
+ALTER TABLE `adresa_new`
+  ADD INDEX `cobce_id` (`cobce_kod`),
+  ADD INDEX `obec_id` (`obec_kod`),
+  ADD INDEX `ulice_id` (`ulice_kod`);

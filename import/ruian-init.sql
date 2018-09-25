@@ -1,15 +1,15 @@
-DROP TABLE IF EXISTS `adresy_new`;
-CREATE TABLE `adresy_new` (
-  `id`                      INT(11)        NOT NULL,
-  `obec_id`                 INT(11)        NOT NULL,
+DROP TABLE IF EXISTS `adresa_new`;
+CREATE TABLE `adresa_new` (
+  `adresa_kod`              INT(11)        NOT NULL,
+  `obec_kod`                INT(11)        NOT NULL,
   `nazev_obce`              VARCHAR(64)    NOT NULL,
-  `momc_id`                 INT(11)    NOT NULL,
+  `momc_kod`                INT(11)    NOT NULL,
   `nazev_momc`              VARCHAR(64)    NOT NULL,
-  `mop_id`                  INT(11)    NOT NULL,
+  `mop_kod`                 INT(11)    NOT NULL,
   `nazev_mop`               VARCHAR(64)    NOT NULL,
-  `casti_obce_id`           INT(11)        NOT NULL,
-  `nazev_casti_obce`        VARCHAR(64)    NOT NULL,
-  `ulice_id`                INT(11)    NOT NULL,
+  `cobce_kod`           INT(11)        NOT NULL,
+  `nazev_cobce`         VARCHAR(64)    NOT NULL,
+  `ulice_kod`               INT(11)    NOT NULL,
   `nazev_ulice`             VARCHAR(64)    NOT NULL,
   `typ_so`                  VARCHAR(16)    NOT NULL,
   `cislo_domovni`           INT(11)        NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE `adresy_new` (
   `souradnice_y`            DECIMAL(12, 2) NOT NULL,
   `souradnice_x`            DECIMAL(12, 2) NOT NULL,
   `plati_od`                DATETIME       NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`adresa_kod`)
 )
 ENGINE = InnoDB;
 
@@ -30,5 +30,5 @@ CREATE TABLE `version_new` (
 )
 ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS adresy LIKE adresy_new;
+CREATE TABLE IF NOT EXISTS adresa LIKE adresa_new;
 CREATE TABLE IF NOT EXISTS `version` LIKE version_new;
