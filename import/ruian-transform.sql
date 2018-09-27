@@ -1,5 +1,12 @@
 SET sql_mode = '';
 
+-- indices for adresa
+ALTER TABLE `adresa_new`
+  ADD INDEX `adresa_cobce_id` (`cobce_kod`),
+  ADD INDEX `adresa_obec_id` (`obec_kod`),
+  ADD INDEX `adresa_ulice_id` (`ulice_kod`),
+  ADD INDEX `adresa_nazev_ulice` (`nazev_ulice`);
+
 -- obec
 DROP TABLE IF EXISTS obec_new;
 CREATE TABLE obec_new
@@ -19,14 +26,13 @@ CREATE TABLE cobce_new
     cobce_kod,
     obec_kod,
     nazev_cobce as nazev,
-    psc,
     nazev_momc,
     nazev_mop
   FROM `adresa_new`
   GROUP BY cobce_kod;
 UPDATE `adresa_new` SET nazev_ulice = nazev_cobce WHERE nazev_ulice = '';
-ALTER TABLE `adresa_new` DROP `nazev_cobce`, DROP `psc`, DROP `nazev_momc`, DROP `nazev_mop`;
-ALTER TABLE `cobce_new` ADD PRIMARY KEY `id` (`cobce_kod`), ADD INDEX `obec_kod` (`obec_kod`);
+ALTER TABLE `adresa_new` DROP `nazev_cobce`, DROP `nazev_momc`, DROP `nazev_mop`;
+ALTER TABLE `cobce_new` ADD PRIMARY KEY `id` (`cobce_kod`), ADD INDEX `cobce_obec_kod` (`obec_kod`);
 CREATE TABLE IF NOT EXISTS cobce LIKE cobce_new;
 
 -- ulice
@@ -38,16 +44,11 @@ CREATE TABLE ulice_new
     obec_kod,
     nazev_ulice as nazev
   FROM `adresa_new`
-  GROUP BY obec_kod, nazev_ulice;
-DELETE FROM ulice_new WHERE ulice_kod=0;
-ALTER TABLE `ulice_new`
-  ADD PRIMARY KEY `id` (`ulice_kod`),
-  ADD INDEX `cobce_id` (`cobce_kod`),
-  ADD INDEX `obec_id` (`obec_kod`);
-CREATE TABLE IF NOT EXISTS ulice LIKE ulice_new;
+  WHERE ulice_kod>0
+  GROUP BY obec_kod, cobce_kod, nazev_ulice;
 
--- indices for adresa
-ALTER TABLE `adresa_new`
-  ADD INDEX `cobce_id` (`cobce_kod`),
-  ADD INDEX `obec_id` (`obec_kod`),
-  ADD INDEX `ulice_id` (`ulice_kod`);
+ALTER TABLE `ulice`
+  ADD INDEX `ulice_ulice_id` (`ulice_kod`),
+  ADD INDEX `ulice_cobce_id` (`cobce_kod`),
+  ADD INDEX `ulice_obec_id` (`obec_kod`);
+CREATE TABLE IF NOT EXISTS ulice LIKE ulice_new;

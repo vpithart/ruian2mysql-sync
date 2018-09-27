@@ -20,8 +20,8 @@ git clone https://github.com/vpithart/ruian2mysql-sync.git
 2) configure your MySQL server credentials
 ```sql
 CREATE DATABASE ruian;
-CREATE USER `ruian-import`@`localhost` IDENTIFIED BY "haven't I told you to keep it secret?";
-GRANT ALL on ruian.* TO `ruian-import`@`localhost`;
+CREATE USER `ruian-import`@localhost IDENTIFIED BY "Haven't I told you to keep it secret?";
+GRANT ALL on ruian.* TO `ruian-import`@localhost;
 ```
 3) give the MySQL connection credentials to the script
 ```sh
