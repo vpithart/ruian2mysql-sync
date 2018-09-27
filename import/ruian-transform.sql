@@ -47,7 +47,7 @@ CREATE TABLE ulice_new
   WHERE ulice_kod>0
   GROUP BY obec_kod, cobce_kod, nazev_ulice;
 
-ALTER TABLE `ulice`
+ALTER TABLE `ulice_new`
   ADD INDEX `ulice_ulice_id` (`ulice_kod`),
   ADD INDEX `ulice_cobce_id` (`cobce_kod`),
   ADD INDEX `ulice_obec_id` (`obec_kod`);
