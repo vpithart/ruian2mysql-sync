@@ -65,6 +65,8 @@ WD=$(pwd)
 
   NUM_FILES=$(find ./CSV/ -type f | wc -l | tr -d '\n')
 
+  [ "$NUM_FILES" = "0" ] && { echo "The $NAME is empty, quitting."; exit 4; }
+
   echo "Importing ${NUM_FILES} file(s) from $NAME into MySQL ${USER}@${HOST}:${PORT}/${DB}"
   $MYSQL < "$WD/import/ruian-init.sql"
   find ./CSV/ -type f | while read FILENAME
@@ -77,6 +79,8 @@ WD=$(pwd)
   echo "Transformations..."
   $MYSQL < "$WD/import/ruian-transform.sql"
   echo "... done"
+
+  export LC_NUMERIC=C
 
   MAXDIFFPCT=5.0
   ABORT=0
