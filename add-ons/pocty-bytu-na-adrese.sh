@@ -86,7 +86,7 @@ EOF
   NAME="${LASTDATE}_OB_${OBEC_KOD}_UKSH.xml"
   EXT="zip"
 
-  if [ ! -s "/tmp/$NAME" ]
+  if [ ! -s "/tmp/$NAME.$EXT" ]
   then
     URL="http://vdp.cuzk.cz/vymenny_format/soucasna/$NAME.$EXT"
     echo "Downloading from $URL..."
@@ -121,7 +121,7 @@ EOF
 
   echo "Finished."
 
-  rm $NAME
+  rm /tmp/$NAME
   # keep the downloaded .zip intentionally
 )
 cleanup
