@@ -83,26 +83,30 @@ EOF
   LASTDATE=`date -d "$(date +%Y-%m-01) -1 day" +%Y%m%d`
   [ -n "$2" ] && LASTDATE=$2
 
-  NAME="${LASTDATE}_OB_${OBEC_KOD}_UKSH.xml.gz"
+  NAME="${LASTDATE}_OB_${OBEC_KOD}_UKSH.xml"
+  EXT="zip"
 
   if [ ! -s "/tmp/$NAME" ]
   then
-    URL="http://vdp.cuzk.cz/vymenny_format/soucasna/$NAME"
+    URL="http://vdp.cuzk.cz/vymenny_format/soucasna/$NAME.$EXT"
     echo "Downloading from $URL..."
-    wget --progress dot:mega -O /tmp/$NAME "$URL"
+    wget --progress dot:mega -O /tmp/$NAME.$EXT "$URL"
   else
-    echo "Using /tmp/$NAME"
+    echo "Using /tmp/$NAME.$EXT"
   fi
 
+  cd /tmp
+  unzip -o $NAME.$EXT # assumes one file: 20190131_OB_554782_UKSH.xml.zip -> 20190131_OB_554782_UKSH.xml
+  cd -
   echo -n "Importing from $NAME into MySQL ${USER}@${HOST}:${PORT}/${DB}/tmp_adresni_misto ..."
-  cat /tmp/$NAME | gunzip | add-ons/parse-OB-adresni-mista.pl > $TMPDIR/adrmista.csv
+  cat /tmp/$NAME | add-ons/parse-OB-adresni-mista.pl > $TMPDIR/adrmista.csv
   RECORDS=$(cat $TMPDIR/adrmista.csv | wc -l | tr -d '\n')
   echo -n " (XML parsed: $RECORDS records)"
   $MYSQL --local_infile=1 -e "LOAD DATA LOCAL INFILE '$TMPDIR/adrmista.csv' INTO TABLE tmp_adresni_misto FIELDS TERMINATED BY ',' IGNORE 0 LINES"
   echo " (SQL loaded)."
 
   echo -n "Importing from $NAME into MySQL ${USER}@${HOST}:${PORT}/${DB}/tmp_stavebni_objekt ..."
-  cat /tmp/$NAME | gunzip | add-ons/parse-OB-stavebni-objekty.pl > $TMPDIR/stavebniobjekty.csv
+  cat /tmp/$NAME | add-ons/parse-OB-stavebni-objekty.pl > $TMPDIR/stavebniobjekty.csv
   RECORDS=$(cat $TMPDIR/stavebniobjekty.csv | wc -l | tr -d '\n')
   echo -n " (XML parsed: $RECORDS records)"
   $MYSQL --local_infile=1 -e "LOAD DATA LOCAL INFILE '$TMPDIR/stavebniobjekty.csv' INTO TABLE tmp_stavebni_objekt FIELDS TERMINATED BY ',' IGNORE 0 LINES"
@@ -116,6 +120,9 @@ EOF
   echo " done"
 
   echo "Finished."
+
+  rm $NAME
+  # keep the downloaded .zip intentionally
 )
 cleanup
 exit 0
