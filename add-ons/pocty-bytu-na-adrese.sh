@@ -97,7 +97,7 @@ EOF
 
   cd /tmp
   unzip -o $NAME.$EXT # assumes one file: 20190131_OB_554782_UKSH.xml.zip -> 20190131_OB_554782_UKSH.xml
-  cd -
+  cd - >/dev/null
   echo -n "Importing from $NAME into MySQL ${USER}@${HOST}:${PORT}/${DB}/tmp_adresni_misto ..."
   cat /tmp/$NAME | add-ons/parse-OB-adresni-mista.pl > $TMPDIR/adrmista.csv
   RECORDS=$(cat $TMPDIR/adrmista.csv | wc -l | tr -d '\n')
