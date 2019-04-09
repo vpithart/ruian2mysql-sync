@@ -2,7 +2,7 @@
 # Cronjob to synchronize RÚIAN (Czech geolocation data) into local MySQL every month
 # https://github.com/vpithart/ruian2mysql-sync
 #
-# ♥ 2018 <vpithart@lhota.hkfree.org>
+# ♥ 2018-2019 <vpithart@lhota.hkfree.org>
 
 source .env || {
   echo "Configuration (.env) file missing"
@@ -44,7 +44,7 @@ WD=$(pwd)
   MYSQL="mysql -h${HOST} -P${PORT} -u${USER} ${DB}"
   export MYSQL_PWD="$PASSWORD"
 
-  LASTDATE=`date -d "$(date +%Y-%m-01) -1 day" +%Y%m%d`
+  LASTDATE=`date -d "$(date +%Y-%m-01) - 1 day" +%Y%m%d`
   [ -n "$1" ] && LASTDATE=$1
   HAVE_VERSION=$($MYSQL --skip-column-names -e "SELECT version FROM version LIMIT 1" 2>/dev/null || true)
 

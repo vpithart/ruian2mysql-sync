@@ -9,7 +9,7 @@
 #  ./import/pocty-bytu-na-adrese.sh 537683 # Poděbrady
 # ID_OBCE je cislo ktere najdes na http://vdp.cuzk.cz/vdp/ruian/obce/vyhledej
 #
-# ♥ 2018 <vpithart@lhota.hkfree.org>
+# ♥ 2018-2019 <vpithart@lhota.hkfree.org>
 
 source .env || {
   echo "Configuration (.env) file missing"
@@ -48,19 +48,12 @@ WD=$(pwd)
 MYSQL="mysql -h${HOST} -P${PORT} -u${USER} ${DB}"
 export MYSQL_PWD="$PASSWORD"
 
-# toto muze selhat, kdyz tam uz ty columny jsou - nevadi
-echo -n "MySQL: ALTER TABLE adresa ..."
-echo "ALTER TABLE adresa ADD COLUMN objekt_kod INT(11) DEFAULT NULL; CREATE INDEX adresa_objekt_id ON adresa(objekt_kod);" | $MYSQL 2>/dev/null
-echo "ALTER TABLE adresa ADD COLUMN pocet_bytu SMALLINT(4) DEFAULT NULL;" | $MYSQL 2>/dev/null
-echo " done"
-
 (
   set -e
 
   trap interrupted 1 2 3 6
 
   echo -n "MySQL: CREATE TABLEs (tmp_adresni_misto,tmp_stavebni_objekt) ..."
-
   cat <<EOF | $MYSQL
   DROP TABLE IF EXISTS tmp_adresni_misto;
   CREATE TABLE tmp_adresni_misto (
@@ -78,9 +71,18 @@ echo " done"
 EOF
   echo " done"
 
+  echo -n "MySQL: CREATE TABLE (adresa_pocet_bytu) ..."
+  cat <<EOF | $MYSQL
+  CREATE TABLE IF NOT EXISTS adresa_pocet_bytu (
+    adresa_kod int PRIMARY KEY,
+    pocet_bytu smallint
+  );
+EOF
+  echo " done"
+
   mkdir $TMPDIR
 
-  LASTDATE=`date -d "$(date +%Y-%m-01) -1 day" +%Y%m%d`
+  LASTDATE=`date -d "$(date +%Y-%m-01) - 1 day" +%Y%m%d`
   [ -n "$2" ] && LASTDATE=$2
 
   NAME="${LASTDATE}_OB_${OBEC_KOD}_UKSH.xml"
@@ -112,11 +114,10 @@ EOF
   $MYSQL --local_infile=1 -e "LOAD DATA LOCAL INFILE '$TMPDIR/stavebniobjekty.csv' INTO TABLE tmp_stavebni_objekt FIELDS TERMINATED BY ',' IGNORE 0 LINES"
   echo " (SQL loaded)."
 
-  echo -n "MySQL copy data tmp_adresni_misto -> ruian.adresa (objekt_kod) ..."
-  echo "UPDATE adresa a LEFT JOIN tmp_adresni_misto am ON a.adresa_kod=am.adresa_kod SET a.objekt_kod=am.objekt_kod WHERE a.obec_kod=${OBEC_KOD};" | $MYSQL
-  echo " done"
-  echo -n "MySQL copy data tmp_stavebni_objekt -> ruian.adresa (pocet_bytu) ..."
-  echo "UPDATE adresa a LEFT JOIN tmp_stavebni_objekt so ON a.objekt_kod=so.objekt_kod SET a.pocet_bytu=so.pocet_bytu WHERE a.obec_kod=${OBEC_KOD};" | $MYSQL
+  echo -n "MySQL copy data -> ruian.adresa_pocet_bytu ..."
+  echo "INSERT INTO adresa_pocet_bytu (adresa_kod, pocet_bytu)
+        SELECT a.adresa_kod, b.pocet_bytu FROM tmp_adresni_misto a LEFT JOIN tmp_stavebni_objekt b ON a.objekt_kod=b.objekt_kod
+        ON DUPLICATE KEY UPDATE pocet_bytu=values(pocet_bytu)" | $MYSQL
   echo " done"
 
   echo "Finished."
@@ -127,20 +128,25 @@ EOF
 cleanup
 exit 0
 
-# -- testovaci dotaz Praha
-# SELECT adresa_kod, nazev_ulice, cislo_domovni, cislo_orientacni, objekt_kod, pocet_bytu FROM adresa
-# WHERE obec_kod=554782 AND (
-#    (nazev_ulice = 'Anglická' AND cislo_domovni = 136)
-# OR (nazev_ulice = 'Podskalská' and cislo_domovni = 1290)
-# OR (nazev_ulice = 'Třebešovská' and cislo_domovni in (2251, 2252, 2253, 2254, 2255, 2256))
-# ) ORDER BY nazev_ulice, cislo_domovni, cislo_orientacni;
+"
+-- testovaci dotaz Praha
+SELECT a.adresa_kod, nazev_ulice, cislo_domovni, cislo_orientacni, apb.pocet_bytu
+FROM adresa a LEFT JOIN adresa_pocet_bytu apb ON (a.adresa_kod=apb.adresa_kod)
+WHERE obec_kod=554782 AND (
+   (nazev_ulice = 'Anglická' AND cislo_domovni = 136)
+OR (nazev_ulice = 'Podskalská' and cislo_domovni = 1290)
+OR (nazev_ulice = 'Třebešovská' and cislo_domovni in (2251, 2252, 2253, 2254, 2255, 2256))
+) ORDER BY nazev_ulice, cislo_domovni, cislo_orientacni;
 
-# -- testovaci dotaz Podebrady
-# SELECT adresa_kod, nazev_ulice, cislo_domovni, cislo_orientacni, objekt_kod, pocet_bytu FROM adresa
-# WHERE obec_kod=537683
-# ORDER BY nazev_ulice, cislo_domovni, cislo_orientacni;
+-- testovaci dotaz Podebrady
+SELECT a.adresa_kod, nazev_ulice, cislo_domovni, cislo_orientacni, apb.pocet_bytu
+FROM adresa a LEFT JOIN adresa_pocet_bytu apb ON (a.adresa_kod=apb.adresa_kod)
+WHERE obec_kod=537683
+ORDER BY nazev_ulice, cislo_domovni, cislo_orientacni;
 
-# -- testovaci dotaz Libcice n. Vltavou
-# SELECT adresa_kod, nazev_ulice, cislo_domovni, cislo_orientacni, objekt_kod, pocet_bytu FROM adresa
-# WHERE obec_kod=539414
-# ORDER BY nazev_ulice, cislo_domovni, cislo_orientacni;
+-- testovaci dotaz Libcice n. Vltavou
+SELECT a.adresa_kod, nazev_ulice, cislo_domovni, cislo_orientacni, apb.pocet_bytu
+FROM adresa a LEFT JOIN adresa_pocet_bytu apb ON (a.adresa_kod=apb.adresa_kod)
+WHERE obec_kod=539414
+ORDER BY nazev_ulice, cislo_domovni, cislo_orientacni;
+"
