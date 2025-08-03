@@ -82,7 +82,14 @@ EOF
 
   mkdir $TMPDIR
 
-  LASTDATE=`date -d "$(date +%Y-%m-01) - 1 day" +%Y%m%d`
+  # Get last day of previous month (cross-platform)
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS (BSD date)
+    LASTDATE=$(date -v1d -v-1d +%Y%m%d)
+  else
+    # Linux (GNU date)
+    LASTDATE=$(date -d "$(date +%Y-%m-01) - 1 day" +%Y%m%d)
+  fi
   [ -n "$2" ] && LASTDATE=$2
 
   NAME="${LASTDATE}_OB_${OBEC_KOD}_UKSH.xml"
